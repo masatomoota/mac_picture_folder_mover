@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>528</string>
+	<key>AMApplicationVersion</key>
+	<string>2.10</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>2.0.3</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<dict/>
+					<key>CheckedForUserDefaultShell</key>
+					<dict/>
+					<key>inputMethod</key>
+					<dict/>
+					<key>shell</key>
+					<dict/>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.cocoa.string</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run Shell Script.action</string>
+				<key>ActionName</key>
+				<string>シェルスクリプトを実行</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>COMMAND_STRING</key>
+					<string>#!/bin/zsh
+VOLUME="/Volumes/M_Home_MacMini_Work_SSD_4TB_USB"
+LIBRARY="$VOLUME/masatomo/masatomo_ext/Photos Library.photoslibrary"
+
+if [[ ! -d "$LIBRARY" ]]; then
+  # ライブラリが見つからない場合、AppleScriptでダイアログを表示
+  USER_CHOICE=$(/usr/bin/osascript &lt;&lt;EOF
+    try
+      set dialogResult to display dialog "写真ライブラリが見つかりません。外付けSSDが接続されていないか、パスが間違っています。\n\n新しくライブラリの場所を指定しますか？" buttons {"終了", "新たに指定"} default button "新たに指定" cancel button "終了" with icon caution
+      if button returned of dialogResult is "新たに指定" then
+        set chosenFile to choose file with prompt "写真ライブラリ（.photoslibrary）を選択してください:" of type {"com.apple.photo.library", "public.folder"}
+        return POSIX path of chosenFile
+      end if
+    on error
+      return "CANCELLED"
+    end try
+EOF
+)
+
+  if [[ "$USER_CHOICE" == "CANCELLED" ]] || [[ -z "$USER_CHOICE" ]]; then
+    exit 0
+  fi
+
+  # ユーザーが新しく選択したライブラリのパスを取得
+  NEW_LIBRARY="$USER_CHOICE"
+
+  # 末尾の改行や不要な空白を削除
+  NEW_LIBRARY=$(echo "$NEW_LIBRARY" | tr -d '\r\n')
+
+  if [[ ! -d "$NEW_LIBRARY" ]]; then
+      /usr/bin/osascript -e 'display alert "エラー" message "選択された項目は有効な写真ライブラリではありません。" as critical'
+      exit 1
+  fi
+
+  # デフォルトのライブラリを変更するために、Optionキーを押しながらPhotosを開くように促すメッセージ（Photos.appはコマンドラインからデフォルトライブラリの変更を直接サポートしていないため）
+  # 別の方法として、直接 open -a "Photos" で指定したライブラリを開き、それをデフォルトにするための通知を出す
+  /usr/bin/osascript -e 'display notification "次回以降もこのライブラリを使うには、写真アプリの「設定」から「システムフォトライブラリとして使用」をクリックしてください。" with title "ライブラリを変更しました"'
+  
+  open -a "Photos" "$NEW_LIBRARY"
+  exit 0
+fi
+
+# 通常の起動
+open -a "Photos" "$LIBRARY"
+</string>
+					<key>CheckedForUserDefaultShell</key>
+					<true/>
+					<key>inputMethod</key>
+					<integer>0</integer>
+					<key>shell</key>
+					<string>/bin/zsh</string>
+					<key>source</key>
+					<string></string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.RunShellScript</string>
+				<key>CFBundleVersion</key>
+				<string>2.0.3</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunShellScriptAction</string>
+				<key>InputUUID</key>
+				<string>03F9CDC6-9211-4BC8-BEBB-34E4083236CC</string>
+				<key>Keywords</key>
+				<array>
+					<string>シェル</string>
+					<string>スクリプト</string>
+					<string>コマンド</string>
+					<string>実行</string>
+					<string>UNIX</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>CBF5A255-EFCD-46B5-A15E-3BA506672B6A</string>
+				<key>UUID</key>
+				<string>38D1CA12-A6E9-4426-AE0E-510306F7905B</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<integer>0</integer>
+						<key>name</key>
+						<string>inputMethod</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+					<key>1</key>
+					<dict>
+						<key>default value</key>
+						<false/>
+						<key>name</key>
+						<string>CheckedForUserDefaultShell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>1</string>
+					</dict>
+					<key>2</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>2</string>
+					</dict>
+					<key>3</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>COMMAND_STRING</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>3</string>
+					</dict>
+					<key>4</key>
+					<dict>
+						<key>default value</key>
+						<string>/bin/sh</string>
+						<key>name</key>
+						<string>shell</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>4</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<integer>1</integer>
+				<key>location</key>
+				<string>457.500000:252.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run Shell Script.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.application</string>
+	</dict>
+</dict>
+</plist>
