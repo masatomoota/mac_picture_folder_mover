@@ -63,14 +63,37 @@
 VOLUME="/Volumes/M_Home_MacMini_Work_SSD_4TB_USB"
 LIBRARY="$VOLUME/masatomo/masatomo_ext/Photos Library.photoslibrary"
 
+resolve_photo_library_path() {
+  local raw_candidate="${1%/}"
+  local candidate="$raw_candidate"
+  local matches=()
+
+  while [[ -n "$candidate" &amp;&amp; "$candidate" != "/" ]]; do
+    if [[ -d "$candidate" &amp;&amp; "$candidate" == *.photoslibrary ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+
+    candidate="${candidate:h}"
+  done
+
+  matches=("$raw_candidate"/*.photoslibrary(N-/))
+  if (( ${#matches[@]} == 1 )); then
+    printf '%s\n' "$matches[1]"
+    return 0
+  fi
+
+  return 1
+}
+
 if [[ ! -d "$LIBRARY" ]]; then
   # ライブラリが見つからない場合、AppleScriptでダイアログを表示
   USER_CHOICE=$(/usr/bin/osascript &lt;&lt;EOF
     try
       set dialogResult to display dialog "写真ライブラリが見つかりません。外付けSSDが接続されていないか、パスが間違っています。\n\n新しくライブラリの場所を指定しますか？" buttons {"終了", "新たに指定"} default button "新たに指定" cancel button "終了" with icon caution
       if button returned of dialogResult is "新たに指定" then
-        set chosenFile to choose file with prompt "写真ライブラリ（.photoslibrary）を選択してください:" of type {"com.apple.photo.library", "public.folder"}
-        return POSIX path of chosenFile
+        set chosenFolder to choose folder with prompt "写真ライブラリ（.photoslibrary のパッケージフォルダー）を選択してください:" showing package contents true
+        return POSIX path of chosenFolder
       end if
     on error
       return "CANCELLED"
@@ -86,10 +109,11 @@ EOF
   NEW_LIBRARY="$USER_CHOICE"
 
   # 末尾の改行や不要な空白を削除
-  NEW_LIBRARY=$(echo "$NEW_LIBRARY" | tr -d '\r\n')
+  NEW_LIBRARY=$(printf '%s' "$NEW_LIBRARY" | tr -d '\r\n')
+  NEW_LIBRARY=$(resolve_photo_library_path "$NEW_LIBRARY")
 
-  if [[ ! -d "$NEW_LIBRARY" ]]; then
-      /usr/bin/osascript -e 'display alert "エラー" message "選択された項目は有効な写真ライブラリではありません。" as critical'
+  if [[ -z "$NEW_LIBRARY" ]]; then
+      /usr/bin/osascript -e 'display alert "エラー" message "選択された項目から写真ライブラリ（.photoslibrary）を特定できませんでした。" as critical'
       exit 1
   fi
 

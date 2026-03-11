@@ -16,11 +16,21 @@ if [ ! -e "$TARGET" ]; then
     exit 1
 fi
 
-echo "実行権限 (chmod -R 755) を付与しています: $TARGET"
-chmod -R 755 "$TARGET"
+echo "アプリ内の権限を正規化しています: $TARGET"
+find "$TARGET" -type d -exec chmod 755 {} +
+find "$TARGET" -type f -exec chmod 644 {} +
+
+if [ -d "$TARGET/Contents/MacOS" ]; then
+    find "$TARGET/Contents/MacOS" -type f -exec chmod 755 {} +
+fi
 
 echo "Macのセキュリティ制限（検疫属性）を解除しています: $TARGET"
 xattr -rc "$TARGET"
+
+if command -v codesign >/dev/null 2>&1; then
+    echo "アプリをアドホック署名しています: $TARGET"
+    codesign --force --deep --sign - "$TARGET"
+fi
 
 # Finderに更新を通知
 touch "$TARGET"
